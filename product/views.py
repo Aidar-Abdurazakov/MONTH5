@@ -1,11 +1,19 @@
+from django.db.models import Count, Avg
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from .models import Category, Product, Review
-from .serializers import CategorySerializer, ProductSerializer, ReviewSerializer
+from .serializers import (
+    CategorySerializer,
+    ProductSerializer,
+    ReviewSerializer,
+    ProductReviewsSerializer
+)
 
 
 class CategoryListAPIView(ListAPIView):
-    queryset = Category.objects.all()
+    queryset = Category.objects.annotate(
+        products_count=Count('products')
+    )
     serializer_class = CategorySerializer
 
 
@@ -26,6 +34,13 @@ class ProductDetailAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'id'
+
+
+class ProductReviewsListAPIView(ListAPIView):
+    queryset = Product.objects.annotate(
+        rating=Avg('reviews__stars')
+    )
+    serializer_class = ProductReviewsSerializer
 
 
 class ReviewListAPIView(ListAPIView):
